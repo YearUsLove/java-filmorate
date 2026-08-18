@@ -84,6 +84,12 @@ class FilmControllerTest {
     }
 
     @Test
+    void createFilmWithNullDuration() {
+        validFilm.setDuration(null);
+        assertThrows(ValidationException.class, () -> filmController.createFilm(validFilm));
+    }
+
+    @Test
     void updateNonExistentFilm() {
         validFilm.setId(999L);
         assertThrows(NotFoundException.class, () -> filmController.updateFilm(validFilm));
@@ -91,9 +97,16 @@ class FilmControllerTest {
 
     @Test
     void updateExistingFilm() {
-        Film createdFilm = filmController.createFilm(validFilm);
-        createdFilm.setName("Обновленное название");
-        Film updatedFilm = filmController.updateFilm(createdFilm);
-        assertEquals("Обновленное название", updatedFilm.getName());
+        filmController.createFilm(validFilm);
+
+        Film updatedFilm = new Film();
+        updatedFilm.setId(validFilm.getId());
+        updatedFilm.setName("Обновленное название");
+        updatedFilm.setDescription(validFilm.getDescription());
+        updatedFilm.setReleaseDate(validFilm.getReleaseDate());
+        updatedFilm.setDuration(validFilm.getDuration());
+
+        Film result = filmController.updateFilm(updatedFilm);
+        assertEquals("Обновленное название", result.getName());
     }
 }

@@ -104,9 +104,16 @@ class UserControllerTest {
 
     @Test
     void updateExistingUser() {
-        User createdUser = userController.createUser(validUser);
-        createdUser.setName("Обновленное имя");
-        User updatedUser = userController.updateUser(createdUser);
-        assertEquals("Обновленное имя", updatedUser.getName());
+        userController.createUser(validUser);
+
+        User updatedUser = new User();
+        updatedUser.setId(validUser.getId());
+        updatedUser.setEmail(validUser.getEmail());
+        updatedUser.setLogin(validUser.getLogin());
+        updatedUser.setName("Обновленное имя");
+        updatedUser.setBirthday(validUser.getBirthday());
+
+        User result = userController.updateUser(updatedUser);
+        assertEquals("Обновленное имя", result.getName());
     }
 }
