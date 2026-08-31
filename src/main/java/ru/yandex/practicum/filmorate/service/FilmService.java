@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,30 +33,43 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
         validateFilmReleaseDate(film);
         return filmStorage.create(film);
     }
 
     public Film updateFilm(Film film) {
+        Film existing = filmStorage.getById(film.getId());
+        if (film.getLikes() == null) {
+            film.setLikes(existing.getLikes());
+        }
         validateFilmReleaseDate(film);
         return filmStorage.update(film);
     }
 
     public void addLike(Long filmId, Long userId) {
         Film film = filmStorage.getById(filmId);
-        userStorage.getById(userId); // проверка существования пользователя
+        userStorage.getById(userId);
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
         film.getLikes().add(userId);
     }
 
     public void removeLike(Long filmId, Long userId) {
         Film film = filmStorage.getById(filmId);
         userStorage.getById(userId);
-        film.getLikes().remove(userId);
+        if (film.getLikes() != null) {
+            film.getLikes().remove(userId);
+        }
     }
 
     public List<Film> getPopular(int count) {
         return filmStorage.getAll().stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
+                .sorted(Comparator.comparingInt((Film f) ->
+                        f.getLikes() == null ? 0 : f.getLikes().size()).reversed())
                 .limit(count)
                 .collect(Collectors.toList());
     }
