@@ -1,0 +1,51 @@
+Table users {
+  id bigint [pk]
+  email varchar
+  login varchar
+  name varchar
+  birthday date
+}
+
+Table mpa_ratings {
+  id bigint [pk]
+  name varchar
+}
+
+Table genres {
+  id bigint [pk]
+  name varchar
+}
+
+Table films {
+  id bigint [pk]
+  name varchar
+  description varchar
+  release_date date
+  duration int
+  mpa_rating_id bigint [ref: > mpa_ratings.id]
+}
+
+Table film_genres {
+  film_id bigint [ref: > films.id]
+  genre_id bigint [ref: > genres.id]
+  indexes {
+    (film_id, genre_id) [pk]
+  }
+}
+
+Table film_likes {
+  film_id bigint [ref: > films.id]
+  user_id bigint [ref: > users.id]
+  indexes {
+    (film_id, user_id) [pk]
+  }
+}
+
+Table friendships {
+  user_id bigint [ref: > users.id]
+  friend_id bigint [ref: > users.id]
+  status varchar
+  indexes {
+    (user_id, friend_id) [pk]
+  }
+}
