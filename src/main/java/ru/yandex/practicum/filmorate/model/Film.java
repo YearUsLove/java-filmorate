@@ -18,4 +18,6 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private Integer duration;
     private Set<Long> likes;
+    private Set<Genre> genres;
+    private MpaRating mpaRating;
 }
