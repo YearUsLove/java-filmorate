@@ -37,7 +37,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setDuration(rs.getInt("duration"));
         long mpaId = rs.getLong("mpa_rating_id");
         if (!rs.wasNull()) {
-            film.setMpaRating(new MpaRating(mpaId, null));
+            film.setMpa(new MpaRating(mpaId, null));
         }
         film.setLikes(new HashSet<>());
         film.setGenres(new HashSet<>());
@@ -78,8 +78,8 @@ public class FilmDbStorage implements FilmStorage {
             ps.setString(2, film.getDescription());
             ps.setDate(3, film.getReleaseDate() != null ? Date.valueOf(film.getReleaseDate()) : null);
             ps.setInt(4, film.getDuration() != null ? film.getDuration() : 0);
-            if (film.getMpaRating() != null) {
-                ps.setLong(5, film.getMpaRating().getId());
+            if (film.getMpa() != null) {
+                ps.setLong(5, film.getMpa().getId());
             } else {
                 ps.setNull(5, java.sql.Types.BIGINT);
             }
@@ -99,7 +99,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate() != null ? Date.valueOf(film.getReleaseDate()) : null,
                 film.getDuration(),
-                film.getMpaRating() != null ? film.getMpaRating().getId() : null,
+                film.getMpa() != null ? film.getMpa().getId() : null,
                 film.getId());
         if (updated == 0) {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
@@ -146,7 +146,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void loadGenresAndLikes(Film film) {
-        // жанры
         List<Genre> genres = jdbcTemplate.query(
                 "SELECT g.id, g.name FROM genres g " +
                         "JOIN film_genres fg ON g.id = fg.genre_id " +
@@ -155,16 +154,14 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId());
         film.setGenres(new HashSet<>(genres));
 
-        // MPA: если известен только id — подтянем name
-        if (film.getMpaRating() != null && film.getMpaRating().getName() == null) {
+        if (film.getMpa() != null && film.getMpa().getName() == null) {
             String name = jdbcTemplate.queryForObject(
                     "SELECT name FROM mpa_ratings WHERE id = ?",
                     String.class,
-                    film.getMpaRating().getId());
-            film.getMpaRating().setName(name);
+                    film.getMpa().getId());
+            film.getMpa().setName(name);
         }
 
-        // лайки
         List<Long> likes = jdbcTemplate.query(
                 "SELECT user_id FROM film_likes WHERE film_id = ?",
                 (rs, rowNum) -> rs.getLong("user_id"),
