@@ -4,51 +4,53 @@ Template repository for Filmorate project.
 
 ## Схема базы данных
 
-![ER-диаграмма](docs/er-diagram.png)
+```mermaid
+erDiagram
+    users ||--o{ film_likes : likes
+    users ||--o{ friendships : "user_id"
+    users ||--o{ friendships : "friend_id"
+    films ||--o{ film_likes : liked
+    films ||--o{ film_genres : has
+    films }o--|| mpa_ratings : has
+    genres ||--o{ film_genres : belongs
+```
 
 ### Пояснение
 
 Схема нормализована до 3НФ:
 
-- `users` — пользователи Filmorate.
-- `films` — фильмы, у каждого один рейтинг MPA (`mpa_rating_id`).
-- `mpa_ratings`, `genres` — справочники.
-- `film_genres` — связь «многие-ко-многим» между фильмами и жанрами.
-- `film_likes` — лайки пользователей (тоже many-to-many).
-- `friendships` — дружба со статусом `UNCONFIRMED` / `CONFIRMED`.
+- users — пользователи Filmorate.
+- films — фильмы, у каждого один рейтинг MPA (mpa_rating_id).
+- mpa_ratings, genres — справочники.
+- film_genres — связь многие-ко-многим между фильмами и жанрами.
+- film_likes — лайки пользователей (тоже many-to-many).
+- friendships — дружба со статусом UNCONFIRMED / CONFIRMED.
 
-### Примеры запросов
+### Работа с базой данных
 
-Все фильмы:
+Проект использует встроенную **H2**:
 
-    SELECT * FROM films;
+- Продакшн: `jdbc:h2:file:./db/filmorate` — данные сохраняются в файл.
+- Тесты: `jdbc:h2:mem:testdb` — база в памяти, удаляется после тестов.
 
-Все пользователи:
+Схема создаётся автоматически из `src/main/resources/schema.sql` при запуске.
+Справочники жанров и рейтингов — в `data.sql`.
 
-    SELECT * FROM users;
+### Эндпоинты
 
-Топ-10 популярных фильмов:
+- GET /genres, GET /genres/{id}
+- GET /mpa, GET /mpa/{id}
+- GET /films, POST /films, PUT /films
+- PUT /films/{id}/like/{userId}, DELETE /films/{id}/like/{userId}
+- GET /films/popular?count=N
+- GET /users, POST /users, PUT /users
+- PUT /users/{id}/friends/{friendId}, DELETE /users/{id}/friends/{friendId}
+- GET /users/{id}/friends, GET /users/{id}/friends/common/{otherId}
 
-    SELECT f.id, f.name, COUNT(fl.user_id) AS likes
-    FROM films f
-    LEFT JOIN film_likes fl ON f.id = fl.film_id
-    GROUP BY f.id, f.name
-    ORDER BY likes DESC
-    LIMIT 10;
+### Запуск
 
-Общие друзья двух пользователей:
+    mvn spring-boot:run
 
-    SELECT u.*
-    FROM users u
-    JOIN friendships f1 ON u.id = f1.friend_id
-        AND f1.user_id = ? AND f1.status = 'CONFIRMED'
-    JOIN friendships f2 ON u.id = f2.friend_id
-        AND f2.user_id = ? AND f2.status = 'CONFIRMED';
+### Тесты
 
-Фильмы по жанру:
-
-    SELECT f.*
-    FROM films f
-    JOIN film_genres fg ON f.id = fg.film_id
-    JOIN genres g ON fg.genre_id = g.id
-    WHERE g.name = 'Комедия';
+    mvn test
