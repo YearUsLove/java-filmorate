@@ -15,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Component
 public class FilmDbStorage implements FilmStorage {
