@@ -4,18 +4,27 @@ Template repository for Filmorate project.
 
 ## Схема базы данных
 
-![ER-диаграмма](docs/er-diagram.png)
+```mermaid
+erDiagram
+    users ||--o{ film_likes : likes
+    users ||--o{ friendships : "user_id"
+    users ||--o{ friendships : "friend_id"
+    films ||--o{ film_likes : liked
+    films ||--o{ film_genres : has
+    films }o--|| mpa_ratings : has
+    genres ||--o{ film_genres : belongs
+```
 
 ### Пояснение
 
 Схема нормализована до 3НФ:
 
-- `users` — пользователи Filmorate.
-- `films` — фильмы, у каждого один рейтинг MPA (`mpa_rating_id`).
-- `mpa_ratings`, `genres` — справочники.
-- `film_genres` — связь «многие-ко-многим» между фильмами и жанрами.
-- `film_likes` — лайки пользователей (тоже many-to-many).
-- `friendships` — дружба со статусом `UNCONFIRMED` / `CONFIRMED`.
+- users — пользователи Filmorate.
+- films — фильмы, у каждого один рейтинг MPA (mpa_rating_id).
+- mpa_ratings, genres — справочники.
+- film_genres — связь многие-ко-многим между фильмами и жанрами.
+- film_likes — лайки пользователей (тоже many-to-many).
+- friendships — дружба со статусом UNCONFIRMED / CONFIRMED.
 
 ### Примеры запросов
 
