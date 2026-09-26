@@ -99,6 +99,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId) {
+        getById(userId);
+        getById(friendId);
         jdbcTemplate.update(
                 "MERGE INTO friendships (user_id, friend_id, status) KEY (user_id, friend_id) " +
                         "VALUES (?, ?, 'UNCONFIRMED')",
@@ -107,27 +109,40 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void removeFriend(Long userId, Long friendId) {
+        getById(userId);
+        getById(friendId);
         jdbcTemplate.update(
                 "DELETE FROM friendships WHERE user_id = ? AND friend_id = ?", userId, friendId);
     }
 
     @Override
     public List<User> getFriends(Long userId) {
-        return jdbcTemplate.query(
+        getById(userId);
+        List<User> friends = jdbcTemplate.query(
                 "SELECT u.* FROM users u " +
                         "JOIN friendships f ON u.id = f.friend_id " +
                         "WHERE f.user_id = ? ORDER BY u.id",
                 USER_MAPPER, userId);
+        for (User u : friends) {
+            loadFriends(u);
+        }
+        return friends;
     }
 
     @Override
     public List<User> getCommonFriends(Long userId, Long otherId) {
-        return jdbcTemplate.query(
+        getById(userId);
+        getById(otherId);
+        List<User> users = jdbcTemplate.query(
                 "SELECT u.* FROM users u " +
                         "JOIN friendships f1 ON u.id = f1.friend_id AND f1.user_id = ? " +
                         "JOIN friendships f2 ON u.id = f2.friend_id AND f2.user_id = ? " +
                         "ORDER BY u.id",
                 USER_MAPPER, userId, otherId);
+        for (User u : users) {
+            loadFriends(u);
+        }
+        return users;
     }
 
     private void loadFriends(User user) {

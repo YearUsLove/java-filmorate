@@ -13,7 +13,7 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Component
@@ -38,8 +38,8 @@ public class FilmDbStorage implements FilmStorage {
         if (!rs.wasNull()) {
             film.setMpa(new MpaRating(mpaId, null));
         }
-        film.setLikes(new HashSet<>());
-        film.setGenres(new HashSet<>());
+        film.setLikes(new LinkedHashSet<>());
+        film.setGenres(new LinkedHashSet<>());
         return film;
     };
 
@@ -67,6 +67,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film create(Film film) {
+        validateMpaAndGenres(film);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(
@@ -91,7 +92,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        int updated = jdbcTemplate.update(
+        if (jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM films WHERE id = ?", Integer.class, film.getId()) == 0) {
+            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
+        }
+        validateMpaAndGenres(film);
+        jdbcTemplate.update(
                 "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? " +
                         "WHERE id = ?",
                 film.getName(),
@@ -100,9 +106,6 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 film.getMpa() != null ? film.getMpa().getId() : null,
                 film.getId());
-        if (updated == 0) {
-            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
-        }
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
         saveGenres(film);
         return getById(film.getId());
@@ -144,6 +147,29 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    private void validateMpaAndGenres(Film film) {
+        if (film.getMpa() != null && film.getMpa().getId() != null) {
+            Integer count = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM mpa_ratings WHERE id = ?",
+                    Integer.class, film.getMpa().getId());
+            if (count == null || count == 0) {
+                throw new NotFoundException("Рейтинг с id=" + film.getMpa().getId() + " не найден");
+            }
+        }
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
+                if (genre.getId() != null) {
+                    Integer count = jdbcTemplate.queryForObject(
+                            "SELECT COUNT(*) FROM genres WHERE id = ?",
+                            Integer.class, genre.getId());
+                    if (count == null || count == 0) {
+                        throw new NotFoundException("Жанр с id=" + genre.getId() + " не найден");
+                    }
+                }
+            }
+        }
+    }
+
     private void loadGenresAndLikes(Film film) {
         List<Genre> genres = jdbcTemplate.query(
                 "SELECT g.id, g.name FROM genres g " +
@@ -151,7 +177,7 @@ public class FilmDbStorage implements FilmStorage {
                         "WHERE fg.film_id = ? ORDER BY g.id",
                 (rs, rowNum) -> new Genre(rs.getLong("id"), rs.getString("name")),
                 film.getId());
-        film.setGenres(new HashSet<>(genres));
+        film.setGenres(new LinkedHashSet<>(genres));
 
         if (film.getMpa() != null && film.getMpa().getName() == null) {
             String name = jdbcTemplate.queryForObject(
@@ -165,7 +191,7 @@ public class FilmDbStorage implements FilmStorage {
                 "SELECT user_id FROM film_likes WHERE film_id = ?",
                 (rs, rowNum) -> rs.getLong("user_id"),
                 film.getId());
-        film.setLikes(new HashSet<>(likes));
+        film.setLikes(new LinkedHashSet<>(likes));
     }
 
     private void saveGenres(Film film) {
