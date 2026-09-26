@@ -87,7 +87,7 @@ public class FilmDbStorage implements FilmStorage {
         }, keyHolder);
         film.setId(keyHolder.getKey().longValue());
         saveGenres(film);
-        return film;
+        return getById(film.getId());
     }
 
     @Override
@@ -155,16 +155,13 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId());
         film.setGenres(new HashSet<>(genres));
 
-        // MPA (если только id был задан)
+        // MPA: если известен только id — подтянем name
         if (film.getMpaRating() != null && film.getMpaRating().getName() == null) {
-            jdbcTemplate.query(
+            String name = jdbcTemplate.queryForObject(
                     "SELECT name FROM mpa_ratings WHERE id = ?",
-                    rs -> {
-                        if (rs.next()) {
-                            film.getMpaRating().setName(rs.getString("name"));
-                        }
-                    },
+                    String.class,
                     film.getMpaRating().getId());
+            film.getMpaRating().setName(name);
         }
 
         // лайки
