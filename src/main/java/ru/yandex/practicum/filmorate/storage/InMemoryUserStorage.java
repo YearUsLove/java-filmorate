@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -27,6 +28,11 @@ public class InMemoryUserStorage implements UserStorage {
             throw new NotFoundException("Пользователь с id=" + id + " не найден");
         }
         return user;
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return users.containsKey(id);
     }
 
     @Override
@@ -58,5 +64,42 @@ public class InMemoryUserStorage implements UserStorage {
             throw new NotFoundException("Пользователь с id=" + id + " не найден");
         }
         users.remove(id);
+    }
+
+    @Override
+    public void addFriend(Long userId, Long friendId) {
+        User user = getById(userId);
+        getById(friendId);
+        user.getFriends().add(friendId);
+    }
+
+    @Override
+    public void removeFriend(Long userId, Long friendId) {
+        User user = getById(userId);
+        getById(friendId);
+        user.getFriends().remove(friendId);
+    }
+
+    @Override
+    public List<User> getFriends(Long userId) {
+        User user = getById(userId);
+        List<User> friends = new ArrayList<>();
+        for (Long id : user.getFriends()) {
+            friends.add(getById(id));
+        }
+        return friends;
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long userId, Long otherId) {
+        User user = getById(userId);
+        User other = getById(otherId);
+        Set<Long> common = new HashSet<>(user.getFriends());
+        common.retainAll(other.getFriends());
+        List<User> result = new ArrayList<>();
+        for (Long id : common) {
+            result.add(getById(id));
+        }
+        return result;
     }
 }

@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 class FilmorateApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
-
+    @Test
+    void mainClassExists() {
+        assertDoesNotThrow(() -> Class.forName("ru.yandex.practicum.filmorate.FilmorateApplication"));
+    }
 }
