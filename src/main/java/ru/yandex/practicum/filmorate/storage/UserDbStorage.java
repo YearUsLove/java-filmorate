@@ -58,6 +58,13 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public boolean existsById(Long id) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM users WHERE id = ?", Integer.class, id);
+        return count != null && count > 0;
+    }
+
+    @Override
     public User create(User user) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -99,8 +106,12 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-        getById(userId);
-        getById(friendId);
+        if (!existsById(userId)) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
+        if (!existsById(friendId)) {
+            throw new NotFoundException("Пользователь с id=" + friendId + " не найден");
+        }
         jdbcTemplate.update(
                 "MERGE INTO friendships (user_id, friend_id, status) KEY (user_id, friend_id) " +
                         "VALUES (?, ?, 'UNCONFIRMED')",
@@ -109,15 +120,21 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void removeFriend(Long userId, Long friendId) {
-        getById(userId);
-        getById(friendId);
+        if (!existsById(userId)) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
+        if (!existsById(friendId)) {
+            throw new NotFoundException("Пользователь с id=" + friendId + " не найден");
+        }
         jdbcTemplate.update(
                 "DELETE FROM friendships WHERE user_id = ? AND friend_id = ?", userId, friendId);
     }
 
     @Override
     public List<User> getFriends(Long userId) {
-        getById(userId);
+        if (!existsById(userId)) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
         List<User> friends = jdbcTemplate.query(
                 "SELECT u.* FROM users u " +
                         "JOIN friendships f ON u.id = f.friend_id " +
@@ -131,8 +148,12 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(Long userId, Long otherId) {
-        getById(userId);
-        getById(otherId);
+        if (!existsById(userId)) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
+        if (!existsById(otherId)) {
+            throw new NotFoundException("Пользователь с id=" + otherId + " не найден");
+        }
         List<User> users = jdbcTemplate.query(
                 "SELECT u.* FROM users u " +
                         "JOIN friendships f1 ON u.id = f1.friend_id AND f1.user_id = ? " +

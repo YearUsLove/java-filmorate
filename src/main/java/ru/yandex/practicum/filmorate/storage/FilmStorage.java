@@ -9,6 +9,8 @@ public interface FilmStorage {
 
     Film getById(Long id);
 
+    boolean existsById(Long id);
+
     Film create(Film film);
 
     Film update(Film film);

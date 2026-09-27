@@ -32,6 +32,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public boolean existsById(Long id) {
+        return films.containsKey(id);
+    }
+
+    @Override
     public Film create(Film film) {
         if (film.getLikes() == null) {
             film.setLikes(new HashSet<>());

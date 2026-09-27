@@ -9,6 +9,8 @@ public interface UserStorage {
 
     User getById(Long id);
 
+    boolean existsById(Long id);
+
     User create(User user);
 
     User update(User user);

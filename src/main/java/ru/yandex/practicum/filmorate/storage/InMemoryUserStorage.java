@@ -31,6 +31,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public boolean existsById(Long id) {
+        return users.containsKey(id);
+    }
+
+    @Override
     public User create(User user) {
         if (user.getFriends() == null) {
             user.setFriends(new HashSet<>());
@@ -65,7 +70,6 @@ public class InMemoryUserStorage implements UserStorage {
     public void addFriend(Long userId, Long friendId) {
         User user = getById(userId);
         getById(friendId);
-        // Односторонняя дружба: у user появляется friendId, у friend — нет
         user.getFriends().add(friendId);
     }
 
