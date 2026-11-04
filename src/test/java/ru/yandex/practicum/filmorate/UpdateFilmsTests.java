@@ -9,10 +9,12 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.util.HashSet;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Duration.ofMinutes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UpdateFilmsTests extends FilmsBaseTest {
 
@@ -25,6 +27,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 .duration(ofMinutes(122))
                 .description("Мать обращается за помощью к священникам, когда её дочь-подросток начинает проявлять " +
                         "жуткие признаки демонической одержимости.")
+                .mpa(rating)
+                .genres(singleGenre)
                 .build();
         String jsonBody = objectMapper.writeValueAsString(film);
 
@@ -43,7 +47,10 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 "Content-Type должен содержать формат данных и кодировку");
 
         Film respFilm = objectMapper.readValue(resp.body().trim(), Film.class);
-        film.getLikes().addAll(respFilm.getLikes());
+
+        if (respFilm.getLikes() != null) {
+            film.setLikes(new HashSet<>(respFilm.getLikes()));
+        }
         assertEquals(film, respFilm, "В ответе должны быть данные фильма из запроса");
     }
 
@@ -61,6 +68,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /films должен вернуть 400");
+        assertTrue(resp.body().contains("Тело запроса не должно быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Тело запроса не должно быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -75,6 +84,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 .duration(ofMinutes(83))
                 .description("Молодые люди в техасской глуши становятся жертвами семьи каннибалов и безумного маньяка " +
                         "с бензопилой, не оставляющего никому шанса на выживание.")
+                .mpa(rating)
+                .genres(singleGenre)
                 .build();
         String jsonBody = objectMapper.writeValueAsString(film);
 
@@ -87,6 +98,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /films должен вернуть 400");
+        assertTrue(resp.body().contains("ID должен быть указан"),
+                "Ответ должен содержать сообщение об ошибке 'ID должен быть указан'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -102,6 +115,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 .duration(ofMinutes(83))
                 .description("Молодые люди в техасской глуши становятся жертвами семьи каннибалов и безумного маньяка " +
                         "с бензопилой, не оставляющего никому шанса на выживание.")
+                .mpa(rating)
+                .genres(singleGenre)
                 .build();
         String jsonBody = objectMapper.writeValueAsString(film);
 
@@ -114,6 +129,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(404, resp.statusCode(), "PUT /films должен вернуть 404");
+        assertTrue(resp.body().contains("Фильм с id = 10000 не найден"),
+                "Ответ должен содержать сообщение об ошибке 'Фильм с id = 10000 не найден-'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -133,6 +150,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                         "особым даром — он чует тёмные силы отеля и видит жуткие видения. Безумие отца нарастает, " +
                         "и он решает убить жену и сына. Кошмар в замкнутом пространстве превращается в борьбу " +
                         "за выживание, где реальность и потустороннее сливаются в единый леденящий кровь ужас.")
+                .mpa(rating)
+                .genres(singleGenre)
                 .build();
         String jsonBody = objectMapper.writeValueAsString(film);
 
@@ -145,6 +164,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /films должен вернуть 400");
+        assertTrue(resp.body().contains("Описание не может содержать больше 200 символов"),
+                "Ответ должен содержать сообщение об ошибке 'Описание не может содержать больше 200 символов'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -160,6 +181,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 .duration(ofMinutes(146))
                 .description("Писатель устраивается смотрителем в горный отель на зиму, где из-за изоляции и " +
                         "сверхъестественных сил его безумие приводит к насилию.")
+                .mpa(rating)
+                .genres(singleGenre)
                 .build();
         String jsonBody = objectMapper.writeValueAsString(film);
 
@@ -172,6 +195,9 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /films должен вернуть 400");
+        assertTrue(resp.body().contains("Дата выпуска фильма не должна быть раньше 28.12.1895"),
+                "Ответ должен содержать сообщение об ошибке " +
+                        "'Дата выпуска фильма не должна быть раньше 28.12.1895'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -187,6 +213,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 .duration(ofMinutes(-146))
                 .description("Писатель устраивается смотрителем в горный отель на зиму, где из-за изоляции и " +
                         "сверхъестественных сил его безумие приводит к насилию.")
+                .mpa(rating)
+                .genres(singleGenre)
                 .build();
         String jsonBody = objectMapper.writeValueAsString(film);
 
@@ -199,6 +227,9 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /films должен вернуть 400");
+        assertTrue(resp.body().contains("Продолжительность фильма не может быть отрицательным числом"),
+                "Ответ должен содержать сообщение об ошибке " +
+                        "'Продолжительность фильма не может быть отрицательным числом'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -213,6 +244,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 .duration(ofMinutes(127))
                 .description("После смерти таинственной бабушки семья Грэм начинает сталкиваться с ужасающими семейными " +
                         "тайнами и зловещими силами, угрожающими их уничтожить.")
+                .mpa(rating)
+                .genres(singleGenre)
                 .build();
         String jsonBody = objectMapper.writeValueAsString(film);
 
@@ -225,6 +258,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /films должен вернуть 400");
+        assertTrue(resp.body().contains("Название фильма не должно быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Название фильма не должно быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -240,6 +275,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 .duration(ofMinutes(127))
                 .description("После смерти таинственной бабушки семья Грэм начинает сталкиваться с ужасающими семейными " +
                         "тайнами и зловещими силами, угрожающими их уничтожить.")
+                .mpa(rating)
+                .genres(singleGenre)
                 .build();
         String jsonBody = objectMapper.writeValueAsString(film);
 
@@ -252,6 +289,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /films должен вернуть 400");
+        assertTrue(resp.body().contains("Название фильма не должно быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Название фильма не должно быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -267,6 +306,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 .duration(ofMinutes(127))
                 .description("После смерти таинственной бабушки семья Грэм начинает сталкиваться с ужасающими семейными " +
                         "тайнами и зловещими силами, угрожающими их уничтожить.")
+                .mpa(rating)
+                .genres(singleGenre)
                 .build();
         String jsonBody = objectMapper.writeValueAsString(film);
 
@@ -279,6 +320,8 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /films должен вернуть 400");
+        assertTrue(resp.body().contains("Название фильма не должно быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Название фильма не должно быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,

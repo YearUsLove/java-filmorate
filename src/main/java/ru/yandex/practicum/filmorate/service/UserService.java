@@ -5,37 +5,38 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Getter
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserStorage users;
+    private final UserStorage userStorage;
 
     public Collection<User> users() {
-        log.info("Получен запрос на получение всех пользователей. Всего пользователей: {}", users.findAll().size());
-        log.debug("Список пользователей: {}", users.findAll());
-        return users.findAll();
+        log.info("Получен запрос на получение всех пользователей");
+
+        Collection<User> all = userStorage.findAll();
+        log.debug("Всего пользователей: {}. Список пользователей: {}", all.size(), all);
+        return all;
     }
 
     public Optional<User> getById(Long id) {
         log.debug("Поиск пользователя по id={}", id);
-        Optional<User> user = users.findAll().stream()
-                .filter(u -> u.getId().equals(id))
-                .findAny();
+        Optional<User> user = userStorage.findById(id);
         user.ifPresentOrElse(
-                u -> log.debug("Пользователь найден: {}", u),
-                () -> log.debug("Пользователь с id={} не найден", id)
+                u -> log.debug("Пользователь {} найден по id={}", u, id),
+                () -> log.debug("Пользователь id={} не найден", id)
         );
+
         return user;
     }
 
@@ -48,7 +49,7 @@ public class UserService {
             log.warn("Имя пользователя пустое, будет использован логин '{}'", user.getLogin());
             user.setName(user.getLogin());
         }
-        users.create(user);
+        userStorage.create(user);
         log.info("Пользователь создан: id={}, логин='{}'", user.getId(), user.getLogin());
         return user;
     }
@@ -58,145 +59,66 @@ public class UserService {
         log.debug("Данные обновляемого пользователя: \nemail {}\n логин {}\n имя пользователя {}\nдень рождения {}",
                 userUpdate.getEmail(), userUpdate.getLogin(), userUpdate.getName(), userUpdate.getBirthday());
 
-        Long updatedId = userUpdate.getId();
-        if (users.read(updatedId) != null) {
-            log.debug("Пользователь найден среди уже существующих по его id");
-
-            if (userUpdate.getName() == null || userUpdate.getName().isBlank()) {
-                log.warn("Имя пользователя пустое, будет использован логин '{}'", userUpdate.getLogin());
-                userUpdate.setName(userUpdate.getLogin());
-            }
-
-            User newUser = users.update(updatedId, userUpdate);
-            log.info("Пользователь с id={} обновлен, новый логин='{}'", userUpdate.getId(), userUpdate.getLogin());
-            return newUser;
+        if (isEmpty(userUpdate.getName())) {
+            log.warn("Имя пользователя пустое, будет использован логин '{}'", userUpdate.getLogin());
+            userUpdate.setName(userUpdate.getLogin());
         }
 
-        log.error("Попытка обновить несуществующего пользователя с id={}", userUpdate.getId());
-        throw new NotFoundException("Пользователь с id = " + userUpdate.getId() + " не найден");
+        Long updatedId = userUpdate.getId();
+        checkUser(updatedId, "Попытка обновить несуществующего пользователя с id={}");
+
+        userStorage.update(userUpdate);
+        log.info("Пользователь с id={} обновлен, новый логин='{}'", updatedId, userUpdate.getLogin());
+        return userUpdate;
     }
 
     public void addFriend(Long userId, Long friendId) {
-        log.info("Получен запрос на добавление в друзья для пользователей с id={} и id={}", friendId, userId);
+        log.info("Получен запрос на добавление друга id={} пользователю id={}", friendId, userId);
+        checkUser(friendId, "Попытка добавить несуществующего пользователя с id={} в друзья");
+        checkUser(userId, "Попытка добавить друга несуществующему пользователю с id={}");
 
-        boolean isUserExist = users.read(userId) != null;
-        boolean isFriendExist = users.read(friendId) != null;
-
-        log.trace("Пользователь есть в сторадже: {}, друг есть в сторадже: {}", isUserExist, isFriendExist);
-
-        if (isUserExist && isFriendExist) {
-            log.trace("Список друзей до добавления: {}", users.read(userId).getFriends());
-
-            boolean isAdded = users.read(userId).getFriends().add(friendId);
-
-            log.trace("Список друзей после добавления: {}", users.read(userId).getFriends());
-            if (isAdded) {
-                log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
-            } else {
-                throw new IllegalStateException("Не удалось добавить в друзья по неизвестной причине");
-            }
-
-            isAdded = users.read(friendId).getFriends().add(userId);
-
-            log.trace("Список друзей после добавления: {}", users.read(userId).getFriends());
-            if (isAdded) {
-                log.info("Пользователь {} успешно добавил в друзья пользователя {}", friendId, userId);
-            } else {
-                throw new IllegalStateException("Не удалось добавить в друзья по неизвестной причине");
-            }
-
-            return;
-        }
-
-        if (isUserExist) {
-            log.error("Попытка добавить несуществующего пользователя с id={} в друзья", friendId);
-            throw new NotFoundException("Пользователя с id=" + friendId + " не существует");
-        } else {
-            log.error("Попытка добавить друга несуществующему пользователю с id={}", userId);
-            throw new NotFoundException("Пользователя с id=" + userId + " не существует");
-        }
+        userStorage.addFriend(userId, friendId);
+        log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
-        log.info("Получен запрос на удаление друга с id={} из списка друзей пользователя с id={}", friendId, userId);
+        log.info("Получен запрос на удаление друга id={} из списка друзей пользователя id={}", friendId, userId);
+        checkUser(friendId, "Попытка удаления из друзей несуществующего пользователя id={}");
+        checkUser(userId, "Попытка удаления из друзей у несуществующего пользователя id={}");
 
-        boolean isUserExist = users.read(userId) != null;
-        boolean isFriendExist = users.read(friendId) != null;
+        boolean isRemoved = userStorage.removeFriend(userId, friendId);
 
-        log.trace("Пользователь есть в сторадже: {}, друг есть в сторадже: {}", isUserExist, isFriendExist);
-
-        if (isUserExist && isFriendExist) {
-            log.trace("Список друзей пользователя с id={} до удаления: {}", userId, users.read(userId).getFriends());
-            log.trace("Друг с id={} есть в списке друзей пользователя с id={}: {}",
-                    friendId, userId, users.read(userId).getFriends().contains(friendId));
-
-            boolean isFriendRemoved = users.read(userId).getFriends().remove(friendId);
-            if (isFriendRemoved) {
-                log.info("Пользователь {} успешно удалил из друзей пользователя {}", userId, friendId);
-            } else {
-                log.warn("Друг с id={} не найден в списке друзей пользователя с id={}", friendId, userId);
-            }
-
-            log.trace("Список друзей пользователя с id={} после удаления: {}", userId, users.read(userId).getFriends());
-            log.trace("Список друзей пользователя с id={} до удаления: {}", friendId, users.read(friendId).getFriends());
-            log.trace("Друг с id={} есть в списке друзей пользователя с id={}: {}",
-                    userId, friendId, users.read(friendId).getFriends().contains(userId));
-
-            isFriendRemoved = users.read(friendId).getFriends().remove(userId);
-            if (isFriendRemoved) {
-                log.info("Пользователь {} успешно удалил из друзей пользователя {}", friendId, userId);
-            } else {
-                log.warn("Друг с id={} не найден в списке друзей пользователя с id={}", userId, friendId);
-            }
-
-            log.trace("Список друзей пользователя с id={} после удаления: {}",
-                    friendId, users.read(friendId).getFriends());
-            return;
+        if (isRemoved) {
+            log.info("Пользователь {} удалил из друзей пользователя {}", userId, friendId);
         }
-            if (isUserExist) {
-                log.error("Попытка удаления из друзей не существующего пользователя с id={}", friendId);
-                throw new NotFoundException("Пользователь с id=" + friendId + " не существует");
-            } else {
-                log.error("Попытка удаления из друзей не существующего пользователя с id={}", userId);
-                throw new NotFoundException("Пользователь с id=" + userId + " не существует");
-            }
     }
 
     public Collection<User> friends(Long id) {
         log.info("Получен запрос на получение списка друзей пользователя с id={}", id);
+        checkUser(id, "Попытка получить список друзей несуществующего пользователя с id={}");
 
-        if (users.read(id) != null) {
-            User user = users.read(id);
-
-            log.debug("Пользователь: {}, список друзей: {}", user, user.getFriends());
-            return user.getFriends().stream()
-                    .map(users::read)
-                    .collect(Collectors.toSet());
-        }
-
-        log.error("Попытка получить список друзей несуществующего пользователя с id={}", id);
-        throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        return userStorage.friends(id);
     }
 
     public Collection<User> mutualFriends(Long userId, Long otherId) {
         log.info("Получен запрос на просмотр общих друзей пользователей с id={}, {}", userId, otherId);
+        checkUser(userId, "Попытка получить список общих друзей для несуществующего пользователя id={}");
+        checkUser(otherId, "Попытка получить список общих друзей для несуществующего пользователя id={}");
 
-        boolean isUserExist = users.read(userId) != null;
-        boolean isOtherExist = users.read(otherId) != null;
-
-        log.trace("Пользователь есть в сторадже: {}, другой пользователь есть в сторадже: {}",
-                isUserExist, isOtherExist);
-
-        if (isUserExist && isOtherExist) {
-            Set<Long> intersection = new HashSet<>(users.read(userId).getFriends());
-            intersection.retainAll(users.read(otherId).getFriends());
-            return intersection.stream()
-                    .map(users::read)
-                    .collect(Collectors.toSet());
+        if (userId.equals(otherId)) {
+            throw new ValidationException("Id пользователей должны отличаться для получения списка общих друзей");
         }
 
-        log.error("Попытка получить список общих друзей для несуществующего(их) пользователя(ей) с id={}, {}",
-                userId, otherId);
-        throw new NotFoundException("Передан несуществующий(ие) пользователь(ли)");
+        return userStorage.mutualFriends(userId, otherId);
+    }
+
+    private void checkUser(Long id, String errMessage) {
+        userStorage.findById(id).ifPresentOrElse(
+                u -> log.debug("Пользователь {} найден по id={}", u, id),
+                () -> {
+                    log.error(errMessage, id);
+                    throw new NotFoundException("Пользователь с id = " + id + " не найден");
+                }
+        );
     }
 }

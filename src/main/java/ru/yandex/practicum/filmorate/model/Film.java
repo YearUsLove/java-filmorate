@@ -39,10 +39,15 @@ public class Film {
     @JsonDeserialize(using = DurationDeserializer.class)
     private Duration duration;
 
-    @EqualsAndHashCode.Exclude
-    private final Set<Long> likes = new HashSet<>();
+    private Set<Genre> genres = new HashSet<>();
 
-    @Positive(groups = CommonChecks.class, message = "Продолжиьельность фильма не может быть отрицательным числом")
+    @NotNull(groups = CommonChecks.class, message = "Фильм должен иметь рейтинг MPAA")
+    private Rating mpa;
+
+    @EqualsAndHashCode.Exclude
+    private Set<Long> likes = new HashSet<>();
+
+    @Positive(groups = CommonChecks.class, message = "Продолжительность фильма не может быть отрицательным числом")
     @JsonGetter("duration")
     public Long getDurationInMinutes() {
         if (duration == null) {

@@ -12,6 +12,7 @@ import java.time.LocalDate;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PostUsersTests extends BaseTest {
 
@@ -58,6 +59,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Тело запроса не должно быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Тело запроса не должно быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -82,6 +85,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Электронная почта пользователя не должна быть пустой"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Электронная почта пользователя не должна быть пустой'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -107,6 +112,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Электронная почта пользователя не должна быть пустой"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Электронная почта пользователя не должна быть пустой'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -132,6 +139,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Электронная почта пользователя не должна быть пустой"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Электронная почта пользователя не должна быть пустой'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -157,6 +166,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Почта имеет некорректный формат"),
+                "Ответ должен содержать сообщение об ошибке 'Почта имеет некорректный формат'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -182,6 +193,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Почта имеет некорректный формат"),
+                "Ответ должен содержать сообщение об ошибке 'Почта имеет некорректный формат'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -207,6 +220,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин не может быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Логин не может быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -232,6 +247,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин не может быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Логин не может быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -256,6 +273,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин не может быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Логин не может быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -281,6 +300,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин должен содержать только латинские буквы и цифры"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Логин должен содержать только латинские буквы и цифры'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -306,6 +327,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин должен содержать только латинские буквы и цифры"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Логин должен содержать только латинские буквы и цифры'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -331,6 +354,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Дата рождения не может быть в будущем"),
+                "Ответ должен содержать сообщение об ошибке 'Дата рождения не может быть в будущем'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -415,6 +440,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("Имя пользователя должно содержать буквы и пробелы"),
+                "Ответ должен содержать сообщение об ошибке 'Имя пользователя должно содержать буквы и пробелы'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -441,6 +468,8 @@ public class PostUsersTests extends BaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "POST /users должен вернуть 400");
+        assertTrue(resp.body().contains("ID не должен быть указан"),
+                "Ответ должен содержать сообщение об ошибке 'ID не должен быть указан'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,

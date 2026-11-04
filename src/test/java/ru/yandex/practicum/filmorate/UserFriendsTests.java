@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.base.FriendsBaseTest;
+import ru.yandex.practicum.filmorate.controller.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserFriendsTests extends FriendsBaseTest {
@@ -43,8 +45,8 @@ public class UserFriendsTests extends FriendsBaseTest {
                 .orElse(null);
 
         assertNotNull(newFriend, "В списке друзей пользователя с id=3 должен появиться пользователь с id=4");
-        assertTrue(newFriend.getFriends().contains(3L),
-                "В списке друзей пользователя с id=4 должен быть друг с id=3");
+        assertFalse(newFriend.getFriends().containsKey(3L),
+                "В списке друзей пользователя с id=4 не должен быть друг с id=3");
     }
 
     @Test
@@ -221,7 +223,44 @@ public class UserFriendsTests extends FriendsBaseTest {
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(404, resp.statusCode(),
-                "GET /users/4/friends/common/999 должен вернуть 404");
+        assertThat(resp.statusCode())
+                .as("Статус код ответа GET /users/4/friends/common/999")
+                .isEqualTo(404);
+
+        String body = resp.body().trim();
+        assertThat(body)
+                .as("Тело ответа")
+                .isNotEmpty();
+
+        ErrorResponse err = objectMapper.readValue(body, ErrorResponse.class);
+
+        assertThat(err.getError())
+                .as("Сообщение об ошибке")
+                .contains("Пользователь с id = 999 не найден");
+    }
+
+    @Test
+    public void getMutualFriendsForSameUserTest() throws IOException, InterruptedException {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(getBaseUrl() + "/users/4/friends/common/4"))
+                .GET()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+        assertThat(resp.statusCode())
+                .as("Статус код ответа GET /users/4/friends/common/4")
+                .isEqualTo(400);
+
+        String body = resp.body().trim();
+        assertThat(body)
+                .as("Тело ответа")
+                .isNotEmpty();
+
+        ErrorResponse err = objectMapper.readValue(body, ErrorResponse.class);
+
+        assertThat(err.getError())
+                .as("Сообщение об ошибке")
+                .contains("Id пользователей должны отличаться для получения списка общих друзей");
     }
 }

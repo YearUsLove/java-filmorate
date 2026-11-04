@@ -9,9 +9,11 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.util.HashMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UpdateUsersTests extends UsersBaseTest {
 
@@ -41,7 +43,10 @@ public class UpdateUsersTests extends UsersBaseTest {
                 "Content-Type должен содержать формат данных и кодировку");
 
         User respUser = objectMapper.readValue(resp.body().trim(), User.class);
-        user.getFriends().addAll(respUser.getFriends());
+
+        if (respUser.getFriends() != null) {
+            user.setFriends(new HashMap<>(respUser.getFriends()));
+        }
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса");
     }
 
@@ -64,6 +69,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("ID должен быть указан"),
+                "Ответ должен содержать сообщение об ошибке 'ID должен быть указан'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -90,6 +97,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(404, resp.statusCode(), "PUT /users должен вернуть 404");
+        assertTrue(resp.body().contains("Пользователь с id = 10000 не найден"),
+                "Ответ должен содержать сообщение об ошибке 'Пользователь с id = 10000 не найден'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -110,6 +119,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Тело запроса не должно быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Тело запроса не должно быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -135,6 +146,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Электронная почта пользователя не должна быть пустой"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Электронная почта пользователя не должна быть пустой'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -161,6 +174,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Электронная почта пользователя не должна быть пустой"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Электронная почта пользователя не должна быть пустой'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -187,6 +202,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Электронная почта пользователя не должна быть пустой"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Электронная почта пользователя не должна быть пустой'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -213,6 +230,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Почта имеет некорректный формат"),
+                "Ответ должен содержать сообщение об ошибке 'Почта имеет некорректный формат'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -239,6 +258,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Почта имеет некорректный формат"),
+                "Ответ должен содержать сообщение об ошибке 'Почта имеет некорректный формат'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -265,6 +286,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин не может быть пустым"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Логин не может быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -291,6 +314,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин не может быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Логин не может быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -316,6 +341,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин не может быть пустым"),
+                "Ответ должен содержать сообщение об ошибке 'Логин не может быть пустым'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -342,6 +369,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин должен содержать только латинские буквы и цифры"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Логин должен содержать только латинские буквы и цифры'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -368,6 +397,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Логин должен содержать только латинские буквы и цифры"), "Ответ должен " +
+                "содержать сообщение об ошибке 'Логин должен содержать только латинские буквы и цифры'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -394,6 +425,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Дата рождения не может быть в будущем"),
+                "Ответ должен содержать сообщение об ошибке 'Дата рождения не может быть в будущем'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -427,7 +460,10 @@ public class UpdateUsersTests extends UsersBaseTest {
         User respUser = objectMapper.readValue(resp.body().trim(), User.class);
         user.setId(respUser.getId());
         user.setName(user.getLogin());
-        user.getFriends().addAll(respUser.getFriends());
+
+        if (respUser.getFriends() != null) {
+            user.setFriends(new HashMap<>(respUser.getFriends()));
+        }
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса с логином в имени");
     }
 
@@ -459,7 +495,11 @@ public class UpdateUsersTests extends UsersBaseTest {
         User respUser = objectMapper.readValue(resp.body().trim(), User.class);
         user.setId(respUser.getId());
         user.setName(user.getLogin());
-        user.getFriends().addAll(respUser.getFriends());
+
+        if (respUser.getFriends() != null) {
+            user.setFriends(new HashMap<>(respUser.getFriends()));
+        }
+
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса с логином в имени");
     }
 
@@ -483,6 +523,8 @@ public class UpdateUsersTests extends UsersBaseTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
         assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+        assertTrue(resp.body().contains("Имя пользователя должно содержать буквы и пробелы"),
+                "Ответ должен содержать сообщение об ошибке 'Имя пользователя должно содержать буквы и пробелы'");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,

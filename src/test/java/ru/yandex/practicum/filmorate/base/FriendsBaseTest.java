@@ -15,9 +15,9 @@ public class FriendsBaseTest extends BaseTest {
     }
 
     private void addFriends() {
-        userStorage.read(1L).getFriends().add(2L);
-        userStorage.read(5L).getFriends().add(6L);
-        userStorage.read(5L).getFriends().add(1L);
-        userStorage.read(6L).getFriends().add(1L);
+        userStorage.findById(1L).ifPresent(u -> userStorage.addFriend(u.getId(), 2L));
+        userStorage.findById(5L).ifPresent(u -> userStorage.addFriend(u.getId(), 6L));
+        userStorage.findById(5L).ifPresent(u -> userStorage.addFriend(u.getId(), 1L));
+        userStorage.findById(6L).ifPresent(u -> userStorage.addFriend(u.getId(), 1L));
     }
 }

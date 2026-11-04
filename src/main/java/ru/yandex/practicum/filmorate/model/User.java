@@ -2,11 +2,12 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
+import ru.yandex.practicum.filmorate.enums.FriendStatus;
 import ru.yandex.practicum.filmorate.validation_groups.*;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @Builder
@@ -35,5 +36,5 @@ public class User {
     private LocalDate birthday;
 
     @EqualsAndHashCode.Exclude
-    private final Set<Long> friends = new HashSet<>();
+    private Map<Long, FriendStatus> friends = new HashMap<>();
 }

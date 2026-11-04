@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.base.LikesBaseTest;
+import ru.yandex.practicum.filmorate.controller.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FilmLikesTests extends LikesBaseTest {
@@ -218,6 +220,19 @@ public class FilmLikesTests extends LikesBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(400, resp.statusCode(), "GET /films/popular должен вернуть 400");
+        assertThat(resp.statusCode())
+                .as("Статус код ответа GET /films/popular")
+                .isEqualTo(400);
+
+        String body = resp.body().trim();
+        assertThat(body)
+                .as("Тело ответа")
+                .isNotEmpty();
+
+        ErrorResponse err = objectMapper.readValue(body, ErrorResponse.class);
+
+        assertThat(err.getError())
+                .as("Сообщение об ошибке")
+                .contains("Количество фильмов должно быть больше 0");
     }
 }
