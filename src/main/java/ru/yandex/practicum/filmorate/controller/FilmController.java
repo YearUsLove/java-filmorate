@@ -38,6 +38,14 @@ public class FilmController {
         return filmService.getMostPopular(count);
     }
 
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getByDirector(
+            @PathVariable @Positive(message = "id режиссера должен быть положительным") Long directorId,
+            @RequestParam(defaultValue = "year") String sortBy) {
+        log.info("Получен запрос на фильмы режиссёра с id={}, сортировка: {}", directorId, sortBy);
+        return filmService.getByDirectorId(directorId, sortBy);
+    }
+
     @PostMapping
     public Film create(@Validated(CreateSequence.class) @RequestBody Film film) {
         return filmService.create(film);

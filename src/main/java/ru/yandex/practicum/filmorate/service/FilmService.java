@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -141,5 +143,12 @@ public class FilmService {
         log.trace("Список популярных фильмов: {}", popular);
 
         return popular;
+    }
+
+    public Collection<Film> getByDirectorId(Long directorId, String sortBy) {
+        if (!"year".equalsIgnoreCase(sortBy) && !"likes".equalsIgnoreCase(sortBy)) {
+            throw new ValidationException("Параметр sortBy должен быть 'year' или 'likes'");
+        }
+        return filmStorage.findByDirectorId(directorId, sortBy);
     }
 }

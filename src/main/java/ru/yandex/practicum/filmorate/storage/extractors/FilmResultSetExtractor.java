@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.enums.RatingMPA;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -21,7 +22,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Slf4j
 @Component
 public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
-    private static final String GENRE_SEPARATOR = ":";
+    private static final String SEPARATOR = ":";
 
     @Override
     public List<Film> extractData(ResultSet rs) throws SQLException {
@@ -40,9 +41,23 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
                 }
             }
 
-            Set<Long> likedUserIds = new HashSet<>();
+            Set<Director> directors = null;
+            Object[] directorArray = getArrayFromColumn(rs, "directors");
+            if (!isEmpty(directorArray)) {
+                directors = new HashSet<>();
+                for (Object obj : directorArray) {
+                    if (obj == null) continue;
+                    Director director = parseDirector(obj.toString());
+                    if (director != null) {
+                        directors.add(director);
+                    }
+                }
+            }
+
+            Set<Long> likedUserIds = null;
             Object[] likeArray = getArrayFromColumn(rs, "liked_user_ids");
             if (likeArray != null) {
+                likedUserIds = new HashSet<>();
                 for (Object obj : likeArray) {
                     if (obj != null) {
                         likedUserIds.add(((Number) obj).longValue());
@@ -58,9 +73,9 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
                     .duration(Duration.ofMinutes(rs.getLong("duration")))
                     .mpa(parseRating(rs))
                     .genres(genres)
+                    .directors(directors)
                     .likes(likedUserIds)
                     .build();
-
 
             films.add(film);
         }
@@ -69,14 +84,14 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
     }
 
     private Genre parseGenre(String raw) {
-        int sepIndex = raw.indexOf(GENRE_SEPARATOR);
+        int sepIndex = raw.indexOf(SEPARATOR);
         if (sepIndex <= 0) {
             log.warn("Повреждённая запись жанра: '{}'", raw);
             return null;
         }
 
         String idPart = raw.substring(0, sepIndex);
-        String namePart = raw.substring(sepIndex + GENRE_SEPARATOR.length());
+        String namePart = raw.substring(sepIndex + SEPARATOR.length());
 
         long genreId;
         try {
@@ -86,16 +101,33 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
             return null;
         }
 
-        if (isEmpty(namePart)) {
-            return Genre.builder()
-                    .id(genreId)
-                    .name(null)
-                    .build();
-        }
-
         return Genre.builder()
                 .id(genreId)
-                .name(namePart)
+                .name(isEmpty(namePart) ? null : namePart)
+                .build();
+    }
+
+    private Director parseDirector(String raw) {
+        int sepIndex = raw.indexOf(SEPARATOR);
+        if (sepIndex <= 0) {
+            log.warn("Повреждённая запись режиссёра: '{}'", raw);
+            return null;
+        }
+
+        String idPart = raw.substring(0, sepIndex);
+        String namePart = raw.substring(sepIndex + SEPARATOR.length());
+
+        long directorId;
+        try {
+            directorId = Long.parseLong(idPart);
+        } catch (NumberFormatException e) {
+            log.warn("Не удалось разобрать id режиссёра из '{}'", raw);
+            return null;
+        }
+
+        return Director.builder()
+                .id(directorId)
+                .name(isEmpty(namePart) ? null : namePart)
                 .build();
     }
 

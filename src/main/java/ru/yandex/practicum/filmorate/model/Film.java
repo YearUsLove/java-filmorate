@@ -46,6 +46,8 @@ public class Film {
 
     @EqualsAndHashCode.Exclude
     private Set<Long> likes = new HashSet<>();
+    private Set<Director> directors = new HashSet<>();
+
 
     @Positive(groups = CommonChecks.class, message = "Продолжительность фильма не может быть отрицательным числом")
     @JsonGetter("duration")

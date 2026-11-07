@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface FilmStorage {
+    Collection<Film> findByDirectorId(Long directorId, String sortBy);
+
 
     Film create(Film film);
 
