@@ -48,3 +48,20 @@ CREATE TABLE IF NOT EXISTS friends (
     friend_id BIGINT NOT NULL REFERENCES users(id),
     status_id BIGINT NOT NULL REFERENCES friend_status(id)
 );
+
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    content TEXT NOT NULL,
+    is_positive BOOLEAN NOT NULL,
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    film_id BIGINT NOT NULL REFERENCES films(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_reviews_film_id ON reviews(film_id);
+
+CREATE TABLE IF NOT EXISTS review_votes (
+    review_id BIGINT NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    vote SMALLINT NOT NULL CHECK (vote IN (-1, 1)),
+    PRIMARY KEY (review_id, user_id)
+);
