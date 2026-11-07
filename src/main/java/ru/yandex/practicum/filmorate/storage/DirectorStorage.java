@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+// Storage for directors
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.Collection;
