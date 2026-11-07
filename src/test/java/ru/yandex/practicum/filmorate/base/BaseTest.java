@@ -7,6 +7,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -33,6 +34,7 @@ import static ru.yandex.practicum.filmorate.enums.RatingMPA.*;
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 @TestInstance(PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class BaseTest {
     @LocalServerPort
     protected int port;
