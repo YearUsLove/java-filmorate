@@ -87,11 +87,13 @@ class ReviewTests {
     @Test
     void rejectUnknownAuthorAndFilm() throws Exception {
         for (String field : new String[]{"userId", "filmId"}) {
-            Map<String, Object> body = reviewBody(filmId);
-            body.put(field, Long.MAX_VALUE);
-            mvc.perform(post("/reviews").contentType(APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(body)))
-                    .andExpect(status().isNotFound());
+            for (long unknownId : new long[]{-1L, 0L, Long.MAX_VALUE}) {
+                Map<String, Object> body = reviewBody(filmId);
+                body.put(field, unknownId);
+                mvc.perform(post("/reviews").contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(body)))
+                        .andExpect(status().isNotFound());
+            }
         }
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reviews", Integer.class)).isZero();
     }

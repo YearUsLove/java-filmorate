@@ -28,11 +28,9 @@ public class Review {
     private Boolean isPositive;
 
     @NotNull(groups = CommonChecks.class, message = "ID пользователя должен быть указан")
-    @Positive(groups = CommonChecks.class, message = "ID пользователя должен быть положительным числом")
     private Long userId;
 
     @NotNull(groups = CommonChecks.class, message = "ID фильма должен быть указан")
-    @Positive(groups = CommonChecks.class, message = "ID фильма должен быть положительным числом")
     private Long filmId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
