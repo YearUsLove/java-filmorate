@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface DirectorStorage {
+
     Collection<Director> findAll();
 
     Optional<Director> findById(Long id);
@@ -17,4 +18,3 @@ public interface DirectorStorage {
 
     boolean delete(Long id);
 }
-// Force update for GitHub Actions
